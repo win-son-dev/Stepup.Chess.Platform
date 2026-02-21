@@ -1,0 +1,28 @@
+{
+  "rules": {
+    "games": {
+      "$gameId": {
+        ".read": "auth != null",
+        ".write": false
+      }
+    },
+    "queue": {
+      "$userId": {
+        ".read": "$userId === auth.uid",
+        ".write": "$userId === auth.uid"
+      }
+    },
+    "matches": {
+      "$userId": {
+        ".read": "$userId === auth.uid",
+        ".write": false
+      }
+    },
+    "userActiveGame": {
+      "$userId": {
+        ".read": "$userId === auth.uid",
+        ".write": false
+      }
+    }
+  }
+}

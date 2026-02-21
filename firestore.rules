@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth.uid == userId;
+    }
+
+    match /games/{gameId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Cloud Functions only
+
+      match /messages/{msgId} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null
+          && request.resource.data.userId == request.auth.uid;
+        allow update, delete: if false;
+      }
+    }
+
+    match /leaderboard/{userId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Cloud Functions only
+    }
+
+    match /stepTransactions/{userId}/transactions/{txId} {
+      allow read: if request.auth.uid == userId;
+      allow write: if false; // Cloud Functions only
+    }
+
+    match /friendRequests/{userId}/incoming/{fromUserId} {
+      allow read: if request.auth.uid == userId;
+      allow write: if request.auth.uid == fromUserId;
+      allow delete: if request.auth.uid == userId || request.auth.uid == fromUserId;
+    }
+  }
+}

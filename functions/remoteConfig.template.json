@@ -1,0 +1,51 @@
+{
+  "conditions": [],
+  "parameters": {
+    "max_step_delta_per_call": {
+      "defaultValue": {
+        "value": "10000"
+      },
+      "description": "Anti-cheat cap: maximum steps that can be submitted in a single submitStepDelta call",
+      "valueType": "NUMBER"
+    },
+    "max_steps_per_hour": {
+      "defaultValue": {
+        "value": "50000"
+      },
+      "description": "Anti-cheat cap: maximum steps a user can earn per hour across all calls",
+      "valueType": "NUMBER"
+    },
+    "enable_matchmaking": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "Feature flag to enable or disable the matchmaking queue",
+      "valueType": "BOOLEAN"
+    },
+    "enable_leaderboard": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "Feature flag to enable or disable the leaderboard",
+      "valueType": "BOOLEAN"
+    },
+    "enable_chat": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "Feature flag to enable or disable in-game chat",
+      "valueType": "BOOLEAN"
+    },
+    "max_move_history_length": {
+      "defaultValue": {
+        "value": "500"
+      },
+      "description": "Maximum number of moves stored in a game's moveHistory before the game is force-ended",
+      "valueType": "NUMBER"
+    }
+  },
+  "version": {
+    "versionNumber": "1",
+    "description": "Initial StepUp Chess game configuration"
+  }
+}
