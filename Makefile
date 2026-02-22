@@ -1,14 +1,17 @@
 .PHONY: start stop emulators build deploy-dev deploy-prod
 
-## start: kill stale ports, build functions, start emulators
+## start: kill stale ports, build functions, start emulators with persistent state
+## Seed data is saved to ./emulator-seed on exit and reloaded on next start.
+## Test account: test@stepup.local / testpass123 (created by the Flutter app on first run)
 start:
 	@echo "→ Clearing stale emulator ports..."
 	-lsof -ti :9099,5001,8080,9000,4000 | xargs kill -9 2>/dev/null; true
 	@sleep 1
 	@echo "→ Building Cloud Functions..."
 	cd functions && npm run build
-	@echo "→ Starting Firebase emulators..."
-	firebase emulators:start --only auth,functions,database,firestore
+	@echo "→ Starting Firebase emulators (persistent state in ./emulator-seed)..."
+	firebase emulators:start --only auth,functions,database,firestore \
+	  --import=./emulator-seed --export-on-exit=./emulator-seed
 
 ## stop: kill all emulator processes
 stop:

@@ -1,4 +1,4 @@
-import { StepCostPreset, CostMode, PieceType } from './types';
+import { StepCostPreset, CostMode, PieceType } from '../types';
 
 /**
  * Mirrors the cost calculator logic from lib/engine/cost_calculator.dart.

@@ -1,5 +1,5 @@
-import { defineSecret } from 'firebase-functions/params';
 import { getRemoteConfig } from 'firebase-admin/remote-config';
+import { defineSecret } from 'firebase-functions/params';
 
 // === SECRETS ===
 // Add secrets here as integrations are added (e.g. push notification keys, webhook secrets).
@@ -22,9 +22,14 @@ export const CONFIG_KEYS = {
   ENABLE_MATCHMAKING: 'enable_matchmaking',
   ENABLE_LEADERBOARD: 'enable_leaderboard',
   ENABLE_CHAT: 'enable_chat',
-
   // Game limits
   MAX_MOVE_HISTORY_LENGTH: 'max_move_history_length',
+
+  // Step-cost presets — JSON objects with piece costs per preset.
+  // Override these in the Firebase console to tune game balance without a deploy.
+  PRESET_QUICK: 'preset_quick',
+  PRESET_NORMAL: 'preset_normal',
+  PRESET_MARATHON: 'preset_marathon',
 } as const;
 
 // === REMOTE CONFIG DEFAULTS ===
@@ -36,6 +41,9 @@ const DEFAULT_CONFIG: Record<string, string | number | boolean> = {
   [CONFIG_KEYS.ENABLE_LEADERBOARD]: true,
   [CONFIG_KEYS.ENABLE_CHAT]: true,
   [CONFIG_KEYS.MAX_MOVE_HISTORY_LENGTH]: 500,
+  [CONFIG_KEYS.PRESET_QUICK]:    '{"pawn":2,"knight":5,"bishop":5,"rook":7,"queen":10,"king":3,"distanceCost":1}',
+  [CONFIG_KEYS.PRESET_NORMAL]:   '{"pawn":50,"knight":80,"bishop":80,"rook":100,"queen":150,"king":30,"distanceCost":10}',
+  [CONFIG_KEYS.PRESET_MARATHON]: '{"pawn":200,"knight":350,"bishop":350,"rook":500,"queen":750,"king":100,"distanceCost":50}',
 };
 
 // === REMOTE CONFIG HELPER ===
@@ -43,12 +51,27 @@ const DEFAULT_CONFIG: Record<string, string | number | boolean> = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let configCache: any = null;
 
+/** Fallback used when the RC template hasn't been published yet (e.g. emulator). */
+function makeFallbackConfig() {
+  return {
+    getNumber:  (key: string) => (DEFAULT_CONFIG[key] as number)  ?? 0,
+    getBoolean: (key: string) => (DEFAULT_CONFIG[key] as boolean) ?? false,
+    getString:  (key: string) => String(DEFAULT_CONFIG[key]       ?? ''),
+  };
+}
+
 export async function getConfigAsync() {
   if (!configCache) {
-    const rc = getRemoteConfig();
-    const template = rc.initServerTemplate({ defaultConfig: DEFAULT_CONFIG });
-    await template.load();
-    configCache = template.evaluate();
+    try {
+      const rc = getRemoteConfig();
+      const template = rc.initServerTemplate({ defaultConfig: DEFAULT_CONFIG });
+      await template.load();
+      configCache = template.evaluate();
+    } catch {
+      // Remote Config template not published yet (emulator or first deploy).
+      // Fall back to hardcoded defaults so functions still work locally.
+      configCache = makeFallbackConfig();
+    }
   }
   return configCache;
 }
