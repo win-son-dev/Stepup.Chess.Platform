@@ -1,20 +1,17 @@
 import * as admin from 'firebase-admin';
 import { onValueCreated } from 'firebase-functions/v2/database';
-import { OnlineGame } from './types';
-import { matchmakingConfig } from './config/instances';
-
-const INITIAL_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+import { OnlineGame } from '../types';
+import { INITIAL_FEN } from '../utils/constants';
+import { matchmakingConfig } from '../config/instances';
 
 /**
- * matchmakingOnQueueWrite
- *
  * Triggered when any player writes to /queue/{userId}.
  * Reads all queued players sorted by joinedAt (FIFO), pairs the two oldest,
  * creates a game, notifies both via /matches/{userId}/gameId, then removes
  * both from the queue.
  *
  * The Flutter client watches /matches/{userId}/gameId and navigates to the
- * game when this value appears.
+ * game screen when this value appears.
  */
 export const matchmakingOnQueueWrite = onValueCreated(
   { ref: '/queue/{userId}', ...matchmakingConfig },
@@ -30,7 +27,6 @@ export const matchmakingOnQueueWrite = onValueCreated(
     if (entries.length < 2) return;
 
     const [player1, player2] = entries;
-
     const gameRef = db.ref('games').push();
     const gameId = gameRef.key!;
 
